@@ -2492,7 +2492,7 @@ mod hd1910_transport_tests {
     struct Emulator {
         faults: Arc<Mutex<Faults>>,
         done: Arc<AtomicBool>,
-        regs: Arc<Mutex<Vec<[u8; 96]>>>,
+        regs: Arc<Mutex<Vec<[u8; 256]>>>,
         writes: Arc<Mutex<Vec<(u8, u8, Vec<u8>)>>>,
         reads: Arc<Mutex<Vec<(u8, usize)>>>,
         thread: Option<std::thread::JoinHandle<()>>,
@@ -2507,7 +2507,7 @@ mod hd1910_transport_tests {
         let (mut master, mut slave) = serialport::TTYPort::pair().unwrap();
         master.set_timeout(Duration::from_millis(20)).unwrap();
         slave.set_timeout(Duration::from_millis(2)).unwrap();
-        let regs = Arc::new(Mutex::new(vec![[0u8; 96]; 256]));
+        let regs = Arc::new(Mutex::new(vec![[0u8; 256]; 256]));
         for reg in regs.lock().unwrap().iter_mut() {
             reg[21..24].copy_from_slice(&[32, 40, 0]);
             reg[33] = 4;
@@ -3108,13 +3108,14 @@ mod hd1910_transport_tests {
                 (33, 1),
                 (50, 3),
                 (41, 7),
+                (144, 2),
                 (50, 1),
                 (56, 15),
                 (42, 2),
                 (40, 1),
                 (56, 15)
             ],
-            "arming must retain V164 reads without a new runtime readback"
+            "arming keeps the V164 reads; the one addition is the arm-time pack voltage for low-voltage gain compensation, never a runtime readback"
         );
         io.write(&JointTargets::new([0.1; NUM_JOINTS])).unwrap();
         for id in crate::model::JOINT_IDS {

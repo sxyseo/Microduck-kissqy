@@ -108,10 +108,31 @@ impl State {
             bus.verify_torque(&ids, true)?;
         }
         self.inspect(bus, calibration)?;
+        // Low-pack stiffness compensation applies only when arming from rest
+        // (torque off). The already-armed verify path keeps the contract value
+        // so its readback cannot drift with the battery between checks. Legs
+        // alone take it: they carry the duck, while the light head linkage has
+        // the most backlash and buzzes when stiffened past its contract gain.
+        let contract_p = crate::deployment::firmware_p();
+        let leg_p = if off {
+            let scaled = voltage_scaled_p(contract_p, supply_volts(bus, &ids));
+            if scaled != contract_p {
+                tracing::warn!(
+                    "HD1910 leg contract P {contract_p} -> {scaled} for a pack below 7.4 V; bounded at 1.35x and restored on relax"
+                );
+            }
+            scaled
+        } else {
+            contract_p
+        };
         let desired: Vec<_> = self
             .snapshots
             .iter()
-            .map(|s| (s.id, vec![crate::deployment::firmware_p()]))
+            .map(|s| {
+                let name = s.name.as_str();
+                let is_leg = name.contains("hip") || name.contains("knee") || name.contains("ankle");
+                (s.id, vec![if is_leg { leg_p } else { contract_p }])
+            })
             .collect();
         if !off {
             verify_gains(bus, &desired)?;
@@ -186,6 +207,40 @@ impl State {
     }
 }
 
+/// Mean pack voltage in volts from register 144 across the ids, for the one
+/// gain decision an arm makes. Any missing or implausible reply is `None`, and
+/// the caller keeps the contract gain rather than scaling from that.
+fn supply_volts(bus: &mut Bus, ids: &[u8]) -> Option<f64> {
+    let blocks = bus.sync_read(144, 2, ids).ok()?;
+    let readings: Vec<f64> = ids
+        .iter()
+        .filter_map(|id| blocks.get(id))
+        .map(|raw| f64::from(u16::from_le_bytes([raw[0], raw[1]])) / 10.0)
+        .filter(|volts| *volts > 5.0)
+        .collect();
+    if readings.len() == ids.len() && !readings.is_empty() {
+        Some(readings.iter().sum::<f64>() / readings.len() as f64)
+    } else {
+        None
+    }
+}
+
+/// HD1910 holding torque falls as the 2S pack discharges, which is when deep
+/// skills lose leg stiffness. Arming from rest may raise the contract P by
+/// 3.0 per volt under the 7.4 V nominal, never above 1.35x and never below
+/// the contract value; relax still restores the servo's own gains.
+fn voltage_scaled_p(base: u8, volts: Option<f64>) -> u8 {
+    let Some(volts) = volts else {
+        return base;
+    };
+    const NOMINAL: f64 = 7.4;
+    const PER_VOLT: f64 = 3.0;
+    const MAX_FACTOR: f64 = 1.35;
+    let factor = (1.0 + PER_VOLT * (NOMINAL - volts).max(0.0)).clamp(1.0, MAX_FACTOR);
+    let scaled = (f64::from(base) * factor).round();
+    scaled.clamp(f64::from(base), 254.0) as u8
+}
+
 fn verify_gains(bus: &mut Bus, rows: &[(u8, Vec<u8>)]) -> Result<()> {
     let ids: Vec<_> = rows.iter().map(|(id, _)| *id).collect();
     let values = bus.sync_read(50, 1, &ids)?;
@@ -215,6 +270,23 @@ fn write_fixed_settings(bus: &mut Bus, ids: &[u8]) -> Result<()> {
 mod tests {
     use super::*;
     use std::time::Duration;
+
+    #[test]
+    fn voltage_compensation_is_bounded_one_sided_and_absent_without_trust() {
+        // Full and over-nominal packs keep the contract gain.
+        assert_eq!(voltage_scaled_p(32, Some(8.3)), 32);
+        assert_eq!(voltage_scaled_p(32, Some(7.4)), 32);
+        // A half-discharged pack reads ~7.2 V: 1.0 + 3.0*0.2 = 1.6x, capped at 1.35x.
+        assert_eq!(voltage_scaled_p(32, Some(7.2)), 43);
+        // Mid discharge engages the cap earlier with the steeper slope.
+        assert_eq!(voltage_scaled_p(32, Some(7.25)), 43);
+        assert_eq!(voltage_scaled_p(5, Some(7.3)), 7);
+        // Deep discharge never exceeds the 1.35x cap, and never dips below base.
+        assert_eq!(voltage_scaled_p(32, Some(6.8)), 43);
+        assert_eq!(voltage_scaled_p(5, Some(7.2)), 7);
+        // An untrusted or missing reading keeps the contract value untouched.
+        assert_eq!(voltage_scaled_p(32, None), 32);
+    }
 
     #[test]
     fn native_velocity_uses_one_sample_delay_and_resets_after_long_gap() {

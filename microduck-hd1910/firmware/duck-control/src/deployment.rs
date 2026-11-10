@@ -118,13 +118,13 @@ fn read_json(path: &Path) -> Result<Value, String> {
 }
 /// A policy output far outside the actuator span is divergence, not intent.
 /// Driving such a value to the mechanical limit slams the joint — observed as
-/// sit/ground_pick neck commands of -530° clamped to the -90° travel end.
-/// Beyond half a span past the travel the command eases back toward the range
-/// centre over another span and a half, reaching it at twice the span: the
-/// mapping is continuous, so an output hovering near the threshold cannot
-/// bang the joint between two values tick by tick. Ordinary overshoot still
-/// clamps to the travel as before.
-fn sane_clamp(value: f64, (min, max): (f64, f64)) -> f64 {
+/// sit/ground_pick neck commands of -530° and a roulade phase holding -831°
+/// clamped to the -90° travel end. Beyond half a span past the travel the
+/// command eases back toward the range centre over another span and a half,
+/// reaching it at twice the span: the mapping is continuous, so an output
+/// hovering near the threshold cannot bang the joint between two values tick
+/// by tick. Ordinary overshoot still clamps to the travel as before.
+pub fn sane_clamp(value: f64, (min, max): (f64, f64)) -> f64 {
     let span = max - min;
     let centre = (min + max) * 0.5;
     let eased = |over: f64| {

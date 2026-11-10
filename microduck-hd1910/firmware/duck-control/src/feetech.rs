@@ -808,7 +808,11 @@ impl JointCalibration {
         if !min.is_finite() || !max.is_finite() || min >= max {
             return Err(error(format!("{}: invalid joint limits", self.name)));
         }
-        let bounded = radians.clamp(min, max);
+        // Every commanded path funnels through here, so the divergence easing
+        // lives at this chokepoint rather than at any one caller: a roulade
+        // phase was observed holding the neck target at -831°, driving the
+        // servo into its travel end for the whole skill.
+        let bounded = crate::deployment::sane_clamp(radians, (min, max));
         let raw = self.raw_position(bounded).round();
         if !raw.is_finite() || !(0.0..=4095.0).contains(&raw) {
             return Err(error(format!(
@@ -2360,6 +2364,27 @@ mod tests {
         assert!(cal.validate().is_err());
     }
     #[test]
+    fn divergent_targets_ease_to_the_range_centre_at_the_write_chokepoint() {
+        // A roulade phase held the neck at -831° while the servo sat on its
+        // travel end; the easing must land such a command at the centre.
+        let mut joint = calibrated().joints.remove(0);
+        joint.min_rad = Some(-1.5708);
+        joint.max_rad = Some(1.2217);
+        let centre = (-1.5708 + 1.2217) * 0.5;
+        let (raw, limited) = joint.target_raw(-14.5).unwrap();
+        assert!(limited);
+        assert!((joint.position_rad(i32::from(raw)) - centre).abs() < 1e-3);
+        // Ordinary overshoot still clamps to the travel end, unchanged.
+        let (raw, limited) = joint.target_raw(-2.2).unwrap();
+        assert!(limited);
+        assert!((joint.position_rad(i32::from(raw)) - (-1.5708)).abs() < 1e-3);
+        // In-range targets pass through untouched.
+        let (raw, limited) = joint.target_raw(0.35).unwrap();
+        assert!(!limited);
+        assert!((joint.position_rad(i32::from(raw)) - 0.35).abs() <= TAU / 8192.0);
+    }
+
+    #[test]
     fn calibrated_target_roundtrips_and_clamps_without_wrapping() {
         let mut joint = calibrated().joints.remove(0);
         joint.zero_raw = 1900;
@@ -2368,9 +2393,13 @@ mod tests {
             let (raw, limited) = joint.target_raw(0.6).unwrap();
             assert!(!limited);
             assert!((joint.position_rad(i32::from(raw)) - 0.6).abs() <= TAU / 8192.0);
+            // 9.0 rad is divergence, not overshoot: the easing lands it at the
+            // range centre instead of driving the joint to its travel end.
+            let (min, max) = (joint.min_rad.unwrap(), joint.max_rad.unwrap());
+            let centre = (min + max) * 0.5;
             let (raw, limited) = joint.target_raw(9.0).unwrap();
             assert!(limited);
-            assert!((joint.position_rad(i32::from(raw)) - 1.5).abs() <= TAU / 8192.0);
+            assert!((joint.position_rad(i32::from(raw)) - centre).abs() <= TAU / 8192.0);
             assert!(joint.target_raw(f64::NAN).is_err());
         }
     }

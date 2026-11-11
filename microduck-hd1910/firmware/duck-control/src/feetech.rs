@@ -1525,11 +1525,7 @@ impl RobotIo for FeetechIo {
                 return Err(error("Feetech torque-on requires a fresh converged IMU"));
             }
             {
-                self.hd1910.arm(
-                    &mut self.bus,
-                    &self.calibration,
-                    self.latest_slow.as_ref().map(|s| s.volts),
-                )?;
+                self.hd1910.arm(&mut self.bus, &self.calibration)?;
                 // Register inspection can take several transactions. Preload a NEW
                 // measured position after it, never the sample from before setup.
                 self.read_sample(false)?;
@@ -2551,9 +2547,7 @@ mod hd1910_transport_tests {
             reg[48..50].copy_from_slice(&1000u16.to_le_bytes());
             reg[50..53].copy_from_slice(&[32, 40, 0]);
             reg[56..58].copy_from_slice(&2048u16.to_le_bytes());
-            // A full pack by default: the low-voltage leg compensation must stay
-            // out of every ordinary test unless a test chooses its own voltage.
-            reg[62] = 83;
+            reg[62] = 74;
             reg[63] = 35;
         }
         let faults = Arc::new(Mutex::new(Faults::default()));

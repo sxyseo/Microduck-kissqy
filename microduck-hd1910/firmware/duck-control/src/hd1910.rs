@@ -93,7 +93,7 @@ impl State {
         Ok(())
     }
 
-    pub fn arm(&mut self, bus: &mut Bus, calibration: &Calibration) -> Result<()> {
+    pub fn arm(&mut self, bus: &mut Bus, calibration: &Calibration, volts: Option<f64>) -> Result<()> {
         if self.applied {
             return Ok(());
         }
@@ -114,8 +114,12 @@ impl State {
         // alone take it: they carry the duck, while the light head linkage has
         // the most backlash and buzzes when stiffened past its contract gain.
         let contract_p = crate::deployment::firmware_p();
+        // The caller passes the telemetry cycle's averaged pack voltage — the
+        // loop reads it continuously, so it is fresh at torque-on. A direct
+        // register-144 read does not exist on the HD1910 native bus.
+        let volts = volts.filter(|v| *v > 5.0);
         let leg_p = if off {
-            let scaled = voltage_scaled_p(contract_p, supply_volts(bus, &ids));
+            let scaled = voltage_scaled_p(contract_p, volts);
             if scaled != contract_p {
                 tracing::warn!(
                     "HD1910 leg contract P {contract_p} -> {scaled} for a pack below 7.4 V; bounded at 1.35x and restored on relax"
@@ -204,24 +208,6 @@ impl State {
             restore_pending: self.restore.is_some(),
             registers_before_arm: self.snapshots.clone(),
         }
-    }
-}
-
-/// Mean pack voltage in volts from register 144 across the ids, for the one
-/// gain decision an arm makes. Any missing or implausible reply is `None`, and
-/// the caller keeps the contract gain rather than scaling from that.
-fn supply_volts(bus: &mut Bus, ids: &[u8]) -> Option<f64> {
-    let blocks = bus.sync_read(144, 2, ids).ok()?;
-    let readings: Vec<f64> = ids
-        .iter()
-        .filter_map(|id| blocks.get(id))
-        .map(|raw| f64::from(u16::from_le_bytes([raw[0], raw[1]])) / 10.0)
-        .filter(|volts| *volts > 5.0)
-        .collect();
-    if readings.len() == ids.len() && !readings.is_empty() {
-        Some(readings.iter().sum::<f64>() / readings.len() as f64)
-    } else {
-        None
     }
 }
 

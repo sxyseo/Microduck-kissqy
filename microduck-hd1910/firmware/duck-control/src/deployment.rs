@@ -127,15 +127,16 @@ fn read_json(path: &Path) -> Result<Value, String> {
 pub fn sane_clamp(value: f64, (min, max): (f64, f64)) -> f64 {
     let span = max - min;
     let centre = (min + max) * 0.5;
-    let eased = |over: f64| {
-        let t = ((over - span * 0.5) / (span * 1.5)).clamp(0.0, 1.0);
-        t
-    };
+    // The sit divergence runs positive (observed +3..+5 rad while the knees
+    // lag), and a gently ramped +40° head tilt is still enough to tip the
+    // duck over backwards: the high side reaches the centre within one span
+    // past the travel. The low side keeps the gentle ramp — the roulade tuck
+    // works just under its travel end and must not be pulled toward centre.
     if value < min {
-        let t = eased(min - value);
+        let t = (((min - value) - span * 0.5) / (span * 1.5)).clamp(0.0, 1.0);
         min + t * (centre - min)
     } else if value > max {
-        let t = eased(value - max);
+        let t = (((value - max) - span * 0.5) / (span * 0.5)).clamp(0.0, 1.0);
         max + t * (centre - max)
     } else {
         value
@@ -701,6 +702,24 @@ mod tests {
         assert_eq!(sane_clamp(1.4, neck), neck.1);
         // In-range values pass through untouched.
         assert_eq!(sane_clamp(0.35, neck), 0.35);
+    }
+
+    #[test]
+    fn positive_divergence_reaches_the_centre_within_one_span() {
+        let neck = (-1.5708_f64, 1.2217);
+        let centre = (neck.0 + neck.1) * 0.5;
+        // The sit knee-lag divergence (+3..+5 rad) lands level, not tilted back.
+        assert_eq!(sane_clamp(4.7, neck), centre);
+        // A +3.5 rad output is still on the steep ramp but already settles
+        // below +20°, where the old gentle ramp left the head at +40°.
+        assert!(sane_clamp(3.5, neck) < 0.35);
+        // Ordinary positive overshoot still clamps to the travel end.
+        assert_eq!(sane_clamp(1.4, neck), neck.1);
+        assert_eq!(sane_clamp(2.6, neck), neck.1);
+        // The roulade tuck side is untouched: gentle ramp, limit clamp.
+        assert_eq!(sane_clamp(-2.66, neck), neck.0);
+        let tucked = sane_clamp(-3.5, neck);
+        assert!(tucked < -1.0 && tucked > neck.0, "stays a deep tuck inside the travel");
     }
 
     #[test]

@@ -225,15 +225,17 @@ fn supply_volts(bus: &mut Bus, ids: &[u8]) -> Option<f64> {
     }
 }
 
-/// HD1910 holding torque falls as the 2S pack discharges, which is when deep
-/// skills lose leg stiffness. Arming from rest may raise the contract P by
-/// 3.0 per volt under the 7.4 V nominal, never above 1.35x and never below
-/// the contract value; relax still restores the servo's own gains.
+/// HD1910 holding torque falls as the 2S pack discharges, and transitions
+/// sag the bus a further ~0.2 V below the resting read this decision sees.
+/// Arming from rest therefore compensates below a full-pack 7.95 V rest by
+/// 3.0 per volt, never above 1.35x and never below the contract value — a
+/// full pack is untouched, mid-charge legs carry the transition sag, and
+/// relax still restores the servo's own gains.
 fn voltage_scaled_p(base: u8, volts: Option<f64>) -> u8 {
     let Some(volts) = volts else {
         return base;
     };
-    const NOMINAL: f64 = 7.4;
+    const NOMINAL: f64 = 7.95;
     const PER_VOLT: f64 = 3.0;
     const MAX_FACTOR: f64 = 1.35;
     let factor = (1.0 + PER_VOLT * (NOMINAL - volts).max(0.0)).clamp(1.0, MAX_FACTOR);
@@ -273,15 +275,15 @@ mod tests {
 
     #[test]
     fn voltage_compensation_is_bounded_one_sided_and_absent_without_trust() {
-        // Full and over-nominal packs keep the contract gain.
+        // A full pack at rest keeps the contract gain.
         assert_eq!(voltage_scaled_p(32, Some(8.3)), 32);
-        assert_eq!(voltage_scaled_p(32, Some(7.4)), 32);
-        // A half-discharged pack reads ~7.2 V: 1.0 + 3.0*0.2 = 1.6x, capped at 1.35x.
+        assert_eq!(voltage_scaled_p(32, Some(8.0)), 32);
+        // ~74% rests near 7.79 V: transitions sag it further, so the leg gain
+        // is already capped at 1.35x when arming.
+        assert_eq!(voltage_scaled_p(32, Some(7.79)), 43);
+        assert_eq!(voltage_scaled_p(5, Some(7.79)), 7);
+        // Mid and deep discharge stay at the cap, never above, never below base.
         assert_eq!(voltage_scaled_p(32, Some(7.2)), 43);
-        // Mid discharge engages the cap earlier with the steeper slope.
-        assert_eq!(voltage_scaled_p(32, Some(7.25)), 43);
-        assert_eq!(voltage_scaled_p(5, Some(7.3)), 7);
-        // Deep discharge never exceeds the 1.35x cap, and never dips below base.
         assert_eq!(voltage_scaled_p(32, Some(6.8)), 43);
         assert_eq!(voltage_scaled_p(5, Some(7.2)), 7);
         // An untrusted or missing reading keeps the contract value untouched.

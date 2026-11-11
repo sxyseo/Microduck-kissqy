@@ -136,7 +136,13 @@ pub fn sane_clamp(value: f64, (min, max): (f64, f64)) -> f64 {
         let t = (((min - value) - span * 0.5) / (span * 1.5)).clamp(0.0, 1.0);
         min + t * (centre - min)
     } else if value > max {
-        let t = (((value - max) - span * 0.5) / (span * 0.5)).clamp(0.0, 1.0);
+        // The sit policy's deep phase commands the neck to +107° — a third of
+        // a span past its own travel end — which reads as intent only until it
+        // tips the duck over. Overshoot within an eighth of a span keeps the
+        // ordinary limit clamp; beyond that the command eases to the centre
+        // within another eighth, so an in-range-tuned counterbalance pose
+        // survives while impossible excursions land level.
+        let t = (((value - max) - span * 0.125) / (span * 0.125)).clamp(0.0, 1.0);
         max + t * (centre - max)
     } else {
         value
@@ -715,7 +721,10 @@ mod tests {
         assert!(sane_clamp(3.5, neck) < 0.35);
         // Ordinary positive overshoot still clamps to the travel end.
         assert_eq!(sane_clamp(1.4, neck), neck.1);
-        assert_eq!(sane_clamp(2.6, neck), neck.1);
+        assert_eq!(sane_clamp(1.5, neck), neck.1);
+        // The sit deep-phase excursion (+1.86, +1.95) lands level.
+        assert!(sane_clamp(1.86, neck) < 0.1);
+        assert_eq!(sane_clamp(2.6, neck), centre);
         // The roulade tuck side is untouched: gentle ramp, limit clamp.
         assert_eq!(sane_clamp(-2.66, neck), neck.0);
         let tucked = sane_clamp(-3.5, neck);

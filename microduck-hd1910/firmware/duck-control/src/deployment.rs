@@ -127,21 +127,30 @@ fn read_json(path: &Path) -> Result<Value, String> {
 pub fn sane_clamp(value: f64, (min, max): (f64, f64)) -> f64 {
     let span = max - min;
     let centre = (min + max) * 0.5;
-    // The sit divergence runs positive (observed +3..+5 rad while the knees
-    // lag), and a gently ramped +40° head tilt is still enough to tip the
-    // duck over backwards: the high side reaches the centre within one span
-    // past the travel. The low side keeps the gentle ramp — the roulade tuck
-    // works just under its travel end and must not be pulled toward centre.
     if value < min {
         let t = (((min - value) - span * 0.5) / (span * 1.5)).clamp(0.0, 1.0);
         min + t * (centre - min)
     } else if value > max {
-        // The sit policy's deep phase commands the neck to +107° — a third of
-        // a span past its own travel end — which reads as intent only until it
-        // tips the duck over. Overshoot within an eighth of a span keeps the
-        // ordinary limit clamp; beyond that the command eases to the centre
-        // within another eighth, so an in-range-tuned counterbalance pose
-        // survives while impossible excursions land level.
+        let t = (((value - max) - span * 0.5) / (span * 0.5)).clamp(0.0, 1.0);
+        max + t * (centre - max)
+    } else {
+        value
+    }
+}
+
+/// The one joint with an observed in-warranty excursion pathology: sit's deep
+/// phase drives neck_pitch to +107°, a third of a span past its own travel,
+/// tipping the duck backwards. Overshoot within an eighth of a span keeps the
+/// ordinary limit clamp; beyond that the command eases to the centre within
+/// another eighth. Other joints — head_pitch reaches +143° legitimately while
+/// a pick or roulade winds up — keep [`sane_clamp`]'s wide tolerance.
+pub fn neck_sane_clamp(value: f64, (min, max): (f64, f64)) -> f64 {
+    let span = max - min;
+    let centre = (min + max) * 0.5;
+    if value < min {
+        let t = (((min - value) - span * 0.5) / (span * 1.5)).clamp(0.0, 1.0);
+        min + t * (centre - min)
+    } else if value > max {
         let t = (((value - max) - span * 0.125) / (span * 0.125)).clamp(0.0, 1.0);
         max + t * (centre - max)
     } else {
@@ -714,18 +723,23 @@ mod tests {
     fn positive_divergence_reaches_the_centre_within_one_span() {
         let neck = (-1.5708_f64, 1.2217);
         let centre = (neck.0 + neck.1) * 0.5;
-        // The sit knee-lag divergence (+3..+5 rad) lands level, not tilted back.
-        assert_eq!(sane_clamp(4.7, neck), centre);
-        // A +3.5 rad output is still on the steep ramp but already settles
-        // below +20°, where the old gentle ramp left the head at +40°.
-        assert!(sane_clamp(3.5, neck) < 0.35);
-        // Ordinary positive overshoot still clamps to the travel end.
-        assert_eq!(sane_clamp(1.4, neck), neck.1);
-        assert_eq!(sane_clamp(1.5, neck), neck.1);
-        // The sit deep-phase excursion (+1.86, +1.95) lands level.
-        assert!(sane_clamp(1.86, neck) < 0.1);
-        assert_eq!(sane_clamp(2.6, neck), centre);
-        // The roulade tuck side is untouched: gentle ramp, limit clamp.
+        // Neck-only tight tolerance: the sit deep-phase excursions land level.
+        assert_eq!(neck_sane_clamp(4.7, neck), centre);
+        assert!(neck_sane_clamp(3.5, neck) < 0.35);
+        assert_eq!(neck_sane_clamp(1.4, neck), neck.1);
+        assert_eq!(neck_sane_clamp(1.5, neck), neck.1);
+        assert!(neck_sane_clamp(1.86, neck) < 0.1);
+        assert_eq!(neck_sane_clamp(2.6, neck), centre);
+        // Every other joint keeps the wide tolerance: head_pitch legitimately
+        // winds up to +143° during a pick, which must clamp to its travel end
+        // and stay there — pulling it toward centre broke the skill entry.
+        let head = (-1.5708_f64, 1.5708_f64);
+        let head_centre = 0.0;
+        assert_eq!(sane_clamp(2.5, head), head.1);
+        assert_eq!(sane_clamp(3.0, head), head.1);
+        let far = sane_clamp(4.0, head);
+        assert!(far > head_centre && far < head.1, "deep divergence eases part-way");
+        // The shared negative side: roulade tuck keeps its gentle ramp.
         assert_eq!(sane_clamp(-2.66, neck), neck.0);
         let tucked = sane_clamp(-3.5, neck);
         assert!(tucked < -1.0 && tucked > neck.0, "stays a deep tuck inside the travel");

@@ -811,8 +811,14 @@ impl JointCalibration {
         // Every commanded path funnels through here, so the divergence easing
         // lives at this chokepoint rather than at any one caller: a roulade
         // phase was observed holding the neck target at -831°, driving the
-        // servo into its travel end for the whole skill.
-        let bounded = crate::deployment::sane_clamp(radians, (min, max));
+        // servo into its travel end for the whole skill. Neck_pitch alone
+        // takes the tighter positive tolerance; see neck_sane_clamp.
+        let clamp: fn(f64, (f64, f64)) -> f64 = if self.name == "neck_pitch" {
+            crate::deployment::neck_sane_clamp
+        } else {
+            crate::deployment::sane_clamp
+        };
+        let bounded = clamp(radians, (min, max));
         let raw = self.raw_position(bounded).round();
         if !raw.is_finite() || !(0.0..=4095.0).contains(&raw) {
             return Err(error(format!(

@@ -1148,11 +1148,6 @@ pub struct FeetechIo {
     latest_sample_at: Option<Instant>,
     joint_feedback: [Option<JointFeedback>; NUM_JOINTS],
     joint_missing: [u32; NUM_JOINTS],
-    /// Last in-range command per joint. A policy output beyond half a span
-    /// outside the travel is divergence (sit has driven the neck to +303°
-    /// while the knees lagged); the joint then holds this value until the
-    /// policy output returns in range, instead of drifting with the easing.
-    last_sane_target: [Option<f64>; NUM_JOINTS],
     joint_missing_total: [u64; NUM_JOINTS],
     partial_samples_total: u64,
     latest_partial: bool,
@@ -1216,7 +1211,6 @@ impl FeetechIo {
             latest_slow: None,
             latest_sample_at: None,
             joint_feedback: std::array::from_fn(|_| None),
-            last_sane_target: std::array::from_fn(|_| None),
             joint_missing: [0; NUM_JOINTS],
             joint_missing_total: [0; NUM_JOINTS],
             partial_samples_total: 0,
@@ -1492,32 +1486,20 @@ impl RobotIo for FeetechIo {
         }
         let held = self.held_joint_positions();
         let mut clamps = 0;
-        let mut rows = Vec::with_capacity(crate::model::NUM_JOINTS);
-        for (i, (joint, radians)) in self.calibration.joints.iter().zip(targets.positions).enumerate() {
-            // A target beyond half a span outside the travel is divergence:
-            // hold the joint's last in-range command until the policy output
-            // returns, rather than drifting with the eased fallback.
-            let divergent = match (joint.min_rad, joint.max_rad) {
-                (Some(min), Some(max)) => {
-                    let span = max - min;
-                    radians < min - span * 0.5 || radians > max + span * 0.5
+        let rows = self
+            .calibration
+            .joints
+            .iter()
+            .zip(targets.positions)
+            .enumerate()
+            .map(|(i, (joint, radians))| {
+                let (raw, clamped) = joint.target_raw(held[i].unwrap_or(radians))?;
+                if clamped {
+                    clamps += 1;
                 }
-                _ => false,
-            };
-            let commanded = if divergent {
-                self.last_sane_target[i].unwrap_or(radians)
-            } else {
-                radians
-            };
-            let (raw, clamped) = joint.target_raw(held[i].unwrap_or(commanded))?;
-            if clamped {
-                clamps += 1;
-            }
-            if !divergent {
-                self.last_sane_target[i] = Some(radians);
-            }
-            rows.push((joint.id, i32::from(raw)));
-        }
+                Ok((joint.id, i32::from(raw)))
+            })
+            .collect::<Result<Vec<_>>>()?;
         self.bus.signed_positions(&rows)?;
         self.command_clamps_total = self.command_clamps_total.saturating_add(clamps);
         Ok(())

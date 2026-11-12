@@ -808,17 +808,7 @@ impl JointCalibration {
         if !min.is_finite() || !max.is_finite() || min >= max {
             return Err(error(format!("{}: invalid joint limits", self.name)));
         }
-        // Every commanded path funnels through here, so the divergence easing
-        // lives at this chokepoint rather than at any one caller: a roulade
-        // phase was observed holding the neck target at -831°, driving the
-        // servo into its travel end for the whole skill. Neck_pitch alone
-        // takes the tighter positive tolerance; see neck_sane_clamp.
-        let clamp: fn(f64, (f64, f64)) -> f64 = if self.name == "neck_pitch" {
-            crate::deployment::neck_sane_clamp
-        } else {
-            crate::deployment::sane_clamp
-        };
-        let bounded = clamp(radians, (min, max));
+        let bounded = radians.clamp(min, max);
         let raw = self.raw_position(bounded).round();
         if !raw.is_finite() || !(0.0..=4095.0).contains(&raw) {
             return Err(error(format!(
@@ -2370,27 +2360,6 @@ mod tests {
         assert!(cal.validate().is_err());
     }
     #[test]
-    fn divergent_targets_ease_to_the_range_centre_at_the_write_chokepoint() {
-        // A roulade phase held the neck at -831° while the servo sat on its
-        // travel end; the easing must land such a command at the centre.
-        let mut joint = calibrated().joints.remove(0);
-        joint.min_rad = Some(-1.5708);
-        joint.max_rad = Some(1.2217);
-        let centre = (-1.5708 + 1.2217) * 0.5;
-        let (raw, limited) = joint.target_raw(-14.5).unwrap();
-        assert!(limited);
-        assert!((joint.position_rad(i32::from(raw)) - centre).abs() < 1e-3);
-        // Ordinary overshoot still clamps to the travel end, unchanged.
-        let (raw, limited) = joint.target_raw(-2.2).unwrap();
-        assert!(limited);
-        assert!((joint.position_rad(i32::from(raw)) - (-1.5708)).abs() < 1e-3);
-        // In-range targets pass through untouched.
-        let (raw, limited) = joint.target_raw(0.35).unwrap();
-        assert!(!limited);
-        assert!((joint.position_rad(i32::from(raw)) - 0.35).abs() <= TAU / 8192.0);
-    }
-
-    #[test]
     fn calibrated_target_roundtrips_and_clamps_without_wrapping() {
         let mut joint = calibrated().joints.remove(0);
         joint.zero_raw = 1900;
@@ -2399,13 +2368,9 @@ mod tests {
             let (raw, limited) = joint.target_raw(0.6).unwrap();
             assert!(!limited);
             assert!((joint.position_rad(i32::from(raw)) - 0.6).abs() <= TAU / 8192.0);
-            // 9.0 rad is divergence, not overshoot: the easing lands it at the
-            // range centre instead of driving the joint to its travel end.
-            let (min, max) = (joint.min_rad.unwrap(), joint.max_rad.unwrap());
-            let centre = (min + max) * 0.5;
             let (raw, limited) = joint.target_raw(9.0).unwrap();
             assert!(limited);
-            assert!((joint.position_rad(i32::from(raw)) - centre).abs() <= TAU / 8192.0);
+            assert!((joint.position_rad(i32::from(raw)) - 1.5).abs() <= TAU / 8192.0);
             assert!(joint.target_raw(f64::NAN).is_err());
         }
     }
@@ -2527,7 +2492,7 @@ mod hd1910_transport_tests {
     struct Emulator {
         faults: Arc<Mutex<Faults>>,
         done: Arc<AtomicBool>,
-        regs: Arc<Mutex<Vec<[u8; 256]>>>,
+        regs: Arc<Mutex<Vec<[u8; 96]>>>,
         writes: Arc<Mutex<Vec<(u8, u8, Vec<u8>)>>>,
         reads: Arc<Mutex<Vec<(u8, usize)>>>,
         thread: Option<std::thread::JoinHandle<()>>,
@@ -2542,7 +2507,7 @@ mod hd1910_transport_tests {
         let (mut master, mut slave) = serialport::TTYPort::pair().unwrap();
         master.set_timeout(Duration::from_millis(20)).unwrap();
         slave.set_timeout(Duration::from_millis(2)).unwrap();
-        let regs = Arc::new(Mutex::new(vec![[0u8; 256]; 256]));
+        let regs = Arc::new(Mutex::new(vec![[0u8; 96]; 256]));
         for reg in regs.lock().unwrap().iter_mut() {
             reg[21..24].copy_from_slice(&[32, 40, 0]);
             reg[33] = 4;
@@ -3149,7 +3114,7 @@ mod hd1910_transport_tests {
                 (40, 1),
                 (56, 15)
             ],
-            "arming keeps the exact V164 reads; the low-voltage gain decision rides the telemetry cycle's voltage, adding no bus transaction"
+            "arming must retain V164 reads without a new runtime readback"
         );
         io.write(&JointTargets::new([0.1; NUM_JOINTS])).unwrap();
         for id in crate::model::JOINT_IDS {

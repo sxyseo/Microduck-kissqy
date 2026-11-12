@@ -116,48 +116,6 @@ fn read_json(path: &Path) -> Result<Value, String> {
     let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
     serde_json::from_slice(&bytes).map_err(|e| format!("{}: {e}", path.display()))
 }
-/// A policy output far outside the actuator span is divergence, not intent.
-/// Driving such a value to the mechanical limit slams the joint — observed as
-/// sit/ground_pick neck commands of -530° and a roulade phase holding -831°
-/// clamped to the -90° travel end. Beyond half a span past the travel the
-/// command eases back toward the range centre over another span and a half,
-/// reaching it at twice the span: the mapping is continuous, so an output
-/// hovering near the threshold cannot bang the joint between two values tick
-/// by tick. Ordinary overshoot still clamps to the travel as before.
-pub fn sane_clamp(value: f64, (min, max): (f64, f64)) -> f64 {
-    let span = max - min;
-    let centre = (min + max) * 0.5;
-    if value < min {
-        let t = (((min - value) - span * 0.5) / (span * 1.5)).clamp(0.0, 1.0);
-        min + t * (centre - min)
-    } else if value > max {
-        let t = (((value - max) - span * 0.5) / (span * 0.5)).clamp(0.0, 1.0);
-        max + t * (centre - max)
-    } else {
-        value
-    }
-}
-
-/// The one joint with an observed in-warranty excursion pathology: sit's deep
-/// phase drives neck_pitch to +107°, a third of a span past its own travel,
-/// tipping the duck backwards. Overshoot within an eighth of a span keeps the
-/// ordinary limit clamp; beyond that the command eases to the centre within
-/// another eighth. Other joints — head_pitch reaches +143° legitimately while
-/// a pick or roulade winds up — keep [`sane_clamp`]'s wide tolerance.
-pub fn neck_sane_clamp(value: f64, (min, max): (f64, f64)) -> f64 {
-    let span = max - min;
-    let centre = (min + max) * 0.5;
-    if value < min {
-        let t = (((min - value) - span * 0.5) / (span * 1.5)).clamp(0.0, 1.0);
-        min + t * (centre - min)
-    } else if value > max {
-        let t = (((value - max) - span * 0.125) / (span * 0.125)).clamp(0.0, 1.0);
-        max + t * (centre - max)
-    } else {
-        value
-    }
-}
-
 impl Contract {
     /// The gait uses the saved walking scale. Recovery retains the official
     /// standing scale; neither path multiplies its training scale a second time.
@@ -179,11 +137,11 @@ impl Contract {
             }
         }
         for i in 0..4 {
-            c.head[i] = sane_clamp(c.head[i], self.limits[i + 3]);
+            c.head[i] = c.head[i].clamp(self.limits[i + 3].0, self.limits[i + 3].1);
         }
-        c.body.z = sane_clamp(c.body.z, self.limits[9]);
-        c.body.roll = sane_clamp(c.body.roll, self.limits[10]);
-        c.body.pitch = sane_clamp(c.body.pitch, self.limits[11]);
+        c.body.z = c.body.z.clamp(self.limits[9].0, self.limits[9].1);
+        c.body.roll = c.body.roll.clamp(self.limits[10].0, self.limits[10].1);
+        c.body.pitch = c.body.pitch.clamp(self.limits[11].0, self.limits[11].1);
         c
     }
     pub fn load(path: &Path) -> Result<Self, String> {
@@ -702,82 +660,6 @@ mod tests {
                 .unwrap(),
         )
         .unwrap()
-    }
-
-    #[test]
-    fn diverged_policy_outputs_return_to_the_range_centre_instead_of_the_limit() {
-        // sit/ground_pick were observed commanding -9.26 rad (-530°) on the
-        // neck; clamping that to the -90° travel end slams the head back.
-        let neck = (-1.5708_f64, 1.2217);
-        assert_eq!(sane_clamp(-9.26, neck), (neck.0 + neck.1) * 0.5);
-        // Mild overshoot (the -2.66 rad roulade case, 25° past the travel end)
-        // stays an ordinary clamp to the limit, as before.
-        assert_eq!(sane_clamp(-2.66, neck), neck.0);
-        assert_eq!(sane_clamp(-1.8, neck), neck.0);
-        assert_eq!(sane_clamp(1.4, neck), neck.1);
-        // In-range values pass through untouched.
-        assert_eq!(sane_clamp(0.35, neck), 0.35);
-    }
-
-    #[test]
-    fn positive_divergence_reaches_the_centre_within_one_span() {
-        let neck = (-1.5708_f64, 1.2217);
-        let centre = (neck.0 + neck.1) * 0.5;
-        // Neck-only tight tolerance: the sit deep-phase excursions land level.
-        assert_eq!(neck_sane_clamp(4.7, neck), centre);
-        assert!(neck_sane_clamp(3.5, neck) < 0.35);
-        assert_eq!(neck_sane_clamp(1.4, neck), neck.1);
-        assert_eq!(neck_sane_clamp(1.5, neck), neck.1);
-        assert!(neck_sane_clamp(1.86, neck) < 0.1);
-        assert_eq!(neck_sane_clamp(2.6, neck), centre);
-        // Every other joint keeps the wide tolerance: head_pitch legitimately
-        // winds up to +143° during a pick, which must clamp to its travel end
-        // and stay there — pulling it toward centre broke the skill entry.
-        let head = (-1.5708_f64, 1.5708_f64);
-        let head_centre = 0.0;
-        assert_eq!(sane_clamp(2.5, head), head.1);
-        assert_eq!(sane_clamp(3.0, head), head.1);
-        let far = sane_clamp(4.0, head);
-        assert!(far > head_centre && far < head.1, "deep divergence eases part-way");
-        // The shared negative side: roulade tuck keeps its gentle ramp.
-        assert_eq!(sane_clamp(-2.66, neck), neck.0);
-        let tucked = sane_clamp(-3.5, neck);
-        assert!(tucked < -1.0 && tucked > neck.0, "stays a deep tuck inside the travel");
-    }
-
-    #[test]
-    fn the_divergence_easing_is_continuous_at_its_threshold() {
-        let neck = (-1.5708_f64, 1.2217);
-        let span = neck.1 - neck.0;
-        // Either side of the half-span threshold the command moves by the same
-        // step as the input, never by a jump between limit and centre.
-        let below = sane_clamp(neck.0 - span * 0.5 - 1e-6, neck);
-        let at = sane_clamp(neck.0 - span * 0.5, neck);
-        assert!((below - at).abs() < 1e-4, "easing must start where clamping ends");
-        // Deep divergence still settles at the centre, now via a smooth ramp.
-        let mid = sane_clamp(neck.0 - span, neck);
-        assert!(mid > neck.0 && mid < (neck.0 + neck.1) * 0.5);
-        assert_eq!(sane_clamp(neck.0 - 2.0 * span, neck), (neck.0 + neck.1) * 0.5);
-    }
-
-    #[test]
-    fn clamp_command_rejects_diverged_head_outputs_to_neutral() {
-        let contract = joint_contract();
-        let head_limits = contract.limits[3];
-        let mut command = crate::obs::Command::default();
-        for i in 0..4 {
-            command.head[i] = -9.26;
-        }
-        let clamped = contract.clamp_command(command, false);
-        for i in 0..4 {
-            let span = head_limits.1 - head_limits.0;
-            let centre = (head_limits.0 + head_limits.1) * 0.5;
-            assert!(clamped.head[i] >= centre - span && clamped.head[i] <= centre + span);
-            assert!(
-                clamped.head[i] >= head_limits.0 - 1e-9 && clamped.head[i] <= head_limits.1 + 1e-9,
-                "every accepted command stays inside the actuator travel"
-            );
-        }
     }
 
     #[test]

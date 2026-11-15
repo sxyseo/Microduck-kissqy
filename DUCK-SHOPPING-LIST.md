@@ -9,7 +9,7 @@
 
 [🏠 返回项目首页](README.md)
 
-**成品板路线已列价参考合计：¥2936.62**，已含 32GB TF 卡、读卡器与 URT2 舵机调试板；缝合怪版整套代打标价 ¥199，成品板＋代打参考合计 **¥3135.62**。已含 HUB ¥69，电池接入配件与运费另计。
+**成品板路线已列价参考合计：¥2996.62**，已含 32GB TF 卡、读卡器与 URT2 舵机调试板；打印费用按实际报价或耗材预算另计。已含 HUB ¥69，电池接入配件与运费另计。
 
 **[打开可勾选的在线采购清单 →](https://kissqy.github.io/Microduck-kissqy/build/shopping.html)** · [先看各方案预算与明细](https://kissqy.github.io/Microduck-kissqy/build/budget.html)
 
@@ -17,7 +17,7 @@
 
 ## 整机零件一览
 
-<a href="docs/assets/build-parts-kit.jpg?v=20261110-photo-fix"><img src="docs/assets/build-parts-kit.jpg?v=20261110-photo-fix" width="520" alt="Microduck 整机零件实拍，包含舵机、板卡、打印件、线束、轴承、供电配件与手柄" /></a>
+<a href="docs/assets/build-parts-kit.jpg?v=20261112-speaker"><img src="docs/assets/build-parts-kit.jpg?v=20261112-speaker" width="520" alt="Microduck 整机零件实拍，包含舵机、板卡、打印件、线束、轴承、供电配件、手柄与扬声器" /></a>
 
 装配前，对照实物核对舵机、板卡、打印件、线束和配件。点击图片可放大查看。
 
@@ -25,17 +25,19 @@
 
 | 项目 | 购买成品板 | 自己手焊（含工具） |
 | --- | ---: | ---: |
-| 鸭子本体（含手柄、URT2 与参考备料） | ¥2649.62 | ¥2649.62 |
+| 鸭子本体（含手柄、URT2 与参考备料） | ¥2709.62 | ¥2709.62 |
 | HAT＋IMU | [HAT ¥119＋IMU ¥99](https://item.taobao.com/item.htm?id=1095121548583) | ¥94.22～134.22 · 首批材料 |
 | HUB 成品分线板（含缓冲电容） | ¥69 | ¥69 |
 | 焊接、烧录工具与耗材 | 无需焊板工具；成品 IMU 已烧录 FT6 | ¥800～1000 |
-| **不买打印机合计** | **¥2936.62** | **¥3612.84～3852.84** |
+| **不买打印机合计** | **¥2996.62** | **¥3672.84～3912.84** |
 | 3D 打印机预算 | ＋¥3500 | ＋¥3500 |
-| **含打印机合计** | **¥6436.62** | **¥7112.84～7352.84** |
+| **含打印机合计** | **¥6496.62** | **¥7172.84～7412.84** |
 
-**选缝合怪版代打时，另加 ¥199：成品板 ¥3135.62；手焊且已有工具 ¥3011.84～3051.84；手焊并新购工具 ¥3811.84～4051.84。** 代打不需要购买打印机，[版本特点与打印说明](hardware/3d-print-frankenduck/README.md)。
+选择代打时，费用按实际报价另计，无需购买打印机。[版本特点与打印说明](hardware/3d-print-frankenduck/README.md)。
 
-- **上表基础合计尚未计入打印件或打印耗材；代打合计已加 ¥199。整机装配人工、电脑、电池接入等项目，以及运费与损耗另计。** 本体已含15只 HD1910 舵机，单价 ¥119；TF 卡与读卡器已列价计入。
+**[MakerWorld 模型与打印配置](https://makerworld.com.cn/zh/models/3258815-microduck-kissqykai-yuan-feng-he-guai-ban#profileId-3849553)**
+
+- **上表基础合计尚未计入打印件或打印耗材，按实际报价或耗材预算另计。整机装配人工、电脑、电池接入等项目，以及运费与损耗另计。** 本体已含15只 HD1910 舵机，单价 ¥123；TF 卡与读卡器已列价计入。
 - HAT、IMU、HUB 在下方板卡采购表分别列出；HUB ¥69 已带总电源缓冲电容，用于缓冲舵机瞬时负载，防止瞬时压降导致 ZERO 重启，无需单独购买电容。
 - 手焊材料按首次整包采购，区间对应 PCB 有券／无券；[板卡成本](hardware/README.md#制作成本) · [工具预算](docs/BUILD-TOOLS.md#从零配工具预算)。已有工具可复用，成品板方案的常规组装手工具自备。
 
@@ -45,11 +47,13 @@
 | --- | ---: | --- | --- |
 | HAT 成品板<br><sub><strong>AMP2.0 舵机接口</strong>；<strong>喇叭直插即用</strong>，<strong>无需自行短接</strong>；通信稳定<strong>不丢包</strong>。<br>配套 ZERO 使用，提供供电、舵机通信与音频连接。</sub> | 1 块 | ¥119 | [选择 HAT 款式](https://item.taobao.com/item.htm?id=1095121548583) |
 | IMU 成品板（已烧录 FT6）<br><sub><strong>AMP2.0 接口</strong>；姿态稳定<strong>不漂移</strong>；<strong>已预烧录 FT6</strong>，无需另行烧录。<br>配套仓库电池仓，贴合背部主安装板、J1 端子朝上固定，可<strong>直接使用作者 IMU 标定参数</strong>。</sub> | 1 块 | ¥99 | [选择 IMU 款式](https://item.taobao.com/item.htm?id=1095121548583) |
-| HUB 成品分线板（含缓冲电容）<br><sub>舵机总线与电池供电分线；板载 <strong>1000 µF 缓冲电容</strong>，<strong>防止瞬时压降导致 ZERO 重启</strong>。<br>安装在 10、20 舵机上方；CN1 为 XH2.54-2P 电源接口，电池正极接 VIN（+），负极接 GND（−）。</sub> | 1 块 | ¥69 | [选择 HUB 款式](https://item.taobao.com/item.htm?id=1095121548583) |
+| HUB V3 成品分线板（含缓冲电容）<br><sub>舵机总线与电池供电分线；板载 <strong>1000 µF 缓冲电容</strong>，<strong>防止瞬时压降导致 ZERO 重启</strong>。<br>安装在 10、20 舵机上方；V3 所有接口（含电源输入）均为 AMP2.0，按实板丝印核对接线和极性。</sub> | 1 块 | ¥69 | [选择 HUB 款式](https://item.taobao.com/item.htm?id=1095121548583) |
 
 ### 电池接入
 
-HUB 的电源输入 CN1 为 XH2.54-2P。可用 XH2.54 电源线连接仓库电池仓的 M2.6 螺丝触点，取电方便快捷；也可直接插接电压、极性匹配的 XH2.54 接口电池，或将 XH2.54 电源线焊接到香蕉板取电。正极接 VIN（+），负极接 GND（−），按实板丝印核对极性。
+**HUB V3 的所有接口均为 AMP2.0，香蕉取电板也使用 AMP2.0。** 选择成品 HAT／IMU／HUB V3、配套成品线与香蕉取电板，板卡和取电线束可直接插接，免焊装配。香蕉取电板尚未上架，预计 **2026-11-16 前后上架**。 [HUB V3 原理图与 PCB](hardware/ProPrj_DXL_HUB_V3_2026-11-14.epro2)。
+
+**历史 HUB V1 取电：**HUB 的电源输入 CN1 为 XH2.54-2P。可用 XH2.54 电源线连接仓库电池仓的 M2.6 螺丝触点，取电方便快捷；也可直接插接电压、极性匹配的 XH2.54 接口电池，或将 XH2.54 电源线焊接到香蕉板取电。正极接 VIN（+），负极接 GND（−），按实板丝印核对极性。
 
 ## 鸭子本体
 
@@ -59,7 +63,7 @@ HUB 的电源输入 CN1 为 XH2.54-2P。可用 XH2.54 电源线连接仓库电�
 
 | 商品 / 指定型号与款式 | 计价单位 | 参考采购数量 | 历史单价 | 小计 | 店铺 / 商品链接 |
 | --- | --- | ---: | ---: | ---: | --- |
-| **飞特 HD1910 串口总线舵机**<br>HD-1910-C001；HD-1910-C001 | 只 | 15 | ¥119.00 | ¥1785.00 | 深圳飞特舵机工厂店<br>[购买](https://item.taobao.com/item.htm?id=1078248851201)<br>[团购99元/个](https://kissqy.github.io/Microduck-kissqy/build/shopping.html#hd1910-group-buy) |
+| **飞特 HD1910 串口总线舵机**<br>HD-1910-C001；HD-1910-C001 | 只 | 15 | ¥123.00 | ¥1845.00 | 作者淘宝商品<br>[购买](https://e.tb.cn/h.jhmwoGCAcQbwZRt?tk=i4416azfdRS) |
 | **飞特 URT2 舵机调试板**<br>用于设置／修改舵机编号（ID）；已有可复用 | 个 | 1 | ¥45.00 | ¥45.00 | 淘宝<br>[购买商品](https://item.taobao.com/item.htm?abbucket=0&id=603181554943&skuId=4836538640319) |
 | **Radxa ZERO 3W**<br>2GB RAM 无 eMMC 带排针[【Microduck 原版主板】]；2GB RAM / 无eMMC / 带排针 | 个 | 1 | ¥309.00 | ¥309.00 | 瑞莎计算机(深圳)有限公司<br>[购买商品](https://item.taobao.com/item.htm?id=763812025816) |
 | **忆捷 32GB TF 存储卡**<br>监控／记录仪款；32GB 即可；作者补充参考价 | 张 | 1 | ¥39.90 | ¥39.90 | 京东<br>[购买商品](https://3.cn/392wR-H7?jkl=@D1sNrEalQdG@) |
@@ -149,3 +153,4 @@ NP-F550按原订单「2200mAh，2电＋标准双充」套装计费。M2×5螺丝
 **[🧰 查看工具与耗材清单](docs/BUILD-TOOLS.md)**
 
 [📊 Excel历史快照（2026-10-13，最新采购以在线清单为准）](https://github.com/kissqy/Microduck-kissqy/raw/refs/heads/main/hardware/Microduck-HAT-IMU-Shopping-List-20261013.xlsx)
+

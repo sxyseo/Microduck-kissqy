@@ -9,7 +9,7 @@
 
 Microduck-kissqy is kissqy's working physical replica project based on Pollen Robotics Microduck 0.15.1, for **Radxa ZERO 3W, 15 Feetech HD1910 servos and this repository's HAT / torso IMU**. It includes a system image, a Chinese-language Robot Console, ready-made motion models, PCB projects and printing files. **Ordinary use starts with the released models; training your own is optional.**
 
-**Stable public baseline: Robot Console R17 V167 / control.43.** Follow budget, shopping, assembly and first walking below. See the [release baseline and validation scope](../microduck-hd1910/docs/BASELINE.en.md). Source is available; the author's original additions carry personal noncommercial terms, while upstream and third-party components retain their respective licenses. See [component licensing](../microduck-hd1910/LICENSE).
+**Current release: System Image R2 / Robot Console V260 / control.102 / Wi-Fi setup R10.** [Downloads and independent source](https://github.com/kissqy/Microduck-kissqy/blob/main/versions/v260/README.md). [Image R1](releases/public-image-r1.en.md) and the verified V167 / control.43 baseline remain available. This release does not replace existing real-robot Known-Good records. Follow budget, shopping, assembly and first walking below. See the [release baseline and validation scope](../microduck-hd1910/docs/BASELINE.en.md). Source is available; the author's original additions carry personal noncommercial terms, while upstream and third-party components retain their respective licenses. See [component licensing](../microduck-hd1910/LICENSE).
 
 ## Start with these four questions
 
@@ -26,9 +26,9 @@ An assembled robot can start at step 4. For finding the robot's IP after imaging
 
 ## 1. How much will it cost?
 
-**The assembled-board option has a priced reference subtotal of CNY 2936.62**: CNY 2649.62 for the reference body purchases (including the EAGET 32GB microSD card at CNY 39.90 and SAMZHE dual-head high-speed card reader at CNY 22.90), HAT CNY 119, IMU CNY 99 and HUB CNY 69. DIY board materials plus a basic tool allowance produce a reference range of CNY 3612.84–3854.02.
+**The assembled-board option has a priced reference subtotal of CNY 2996.62**: CNY 2709.62 for the reference body purchases (including the EAGET 32GB microSD card at CNY 39.90 and SAMZHE dual-head high-speed card reader at CNY 22.90), HAT CNY 119, IMU CNY 99 and HUB CNY 69. DIY board materials plus a basic tool allowance produce a reference range of CNY 3672.84–3912.84.
 
-A 32GB microSD card is sufficient. One [SAMZHE dual-head high-speed card reader with simultaneous SD / TF card reading](https://3.cn/393kj-8k?jkl=@I2cIJ7xKJzv@) is included at the author's reference price of CNY 22.90; reuse an existing reader if available. The complete FrankenDuck printing service is listed at CNY 199; the assembled-board plus printing reference subtotal is **CNY 3135.62**, without buying a printer. The HUB is included at CNY 69; add battery-connection parts, other unpriced items and shipping. Historical quantities include spare stock. [Open the budget page to add your costs (Chinese) →](https://kissqy.github.io/Microduck-kissqy/build/budget.html)
+A 32GB microSD card is sufficient. One [SAMZHE dual-head high-speed card reader with simultaneous SD / TF card reading](https://3.cn/393kj-8k?jkl=@I2cIJ7xKJzv@) is included at the author's reference price of CNY 22.90; reuse an existing reader if available. Printing costs are additional, based on an actual quote or filament budget; no printer purchase is needed when using a printing service. The HUB is included at CNY 69; add battery-connection parts, other unpriced items and shipping. Historical quantities include spare stock. [Open the budget page to add your costs (Chinese) →](https://kissqy.github.io/Microduck-kissqy/build/budget.html)
 
 ## 2. What should I buy?
 
@@ -44,7 +44,9 @@ An assembled IMU needs no programming tools. For DIY boards, see the [tool list]
 
 **Torso and legs:** [See the HUB harness, IMU mounting, leg assembly and head/neck photo references](BODY-ASSEMBLY.en.md), or [open their web assembly chapters (Chinese)](https://kissqy.github.io/Microduck-kissqy/build/assembly.html#body-photos).
 
-The [FrankenDuck printing set](../hardware/3d-print-frankenduck/README.en.md) contains 36 STLs and one 3MF project with five plates. Adapt printer and material profiles, including TPU parts. The complete printing service is listed at **CNY 199**. That edition page explains the print-orientation, battery-holder, IMU-mount, roller-change, cooling, and assembly improvements.
+The [FrankenDuck printing set](../hardware/3d-print-frankenduck/README.en.md) contains 36 STLs and one 3MF project with five plates. Adapt printer and material profiles, including TPU parts. That edition page explains the print-orientation, battery-holder, IMU-mount, roller-change, cooling, and assembly improvements.
+
+**[MakerWorld model and print profile](https://makerworld.com.cn/zh/models/3258815-microduck-kissqykai-yuan-feng-he-guai-ban#profileId-3849553)**
 
 Choose the HUB battery-holder variant or the official-style holder with thicker latches; both IMU mounts fit this repository's IMU. The October 21 update adds leg support ramps, removes outer leg-shell counterbores and integrates interchangeable feet and roller assemblies without servo removal. Rollers use 623ZZ bearings.
 
@@ -54,9 +56,11 @@ This page links the build stages; individual part instructions are on the printi
 
 **HAT, IMU and HUB are three separate boards. Select each board on the [same product page](https://item.taobao.com/item.htm?id=1095121548583). The HUB costs CNY 69 and includes the main-power buffer capacitor to buffer transient servo loads and help prevent ZERO restarts caused by supply voltage dips.**
 
-For battery power, use a banana board (not yet listed for sale), or the repository’s battery holder with M2.6 screws as power contacts. Connect battery positive to HUB VIN (+) and negative to GND (−), following the board markings.
+**All HUB V3 connectors use AMP2.0 and matching premade cables. The matching banana power board also uses AMP2.0; it is not yet listed for sale and is expected around November 16, 2026. With the assembled boards, cables and banana board in hand, assembly can use plug-in connections without soldering.**
 
-The [hardware guide](../hardware/README.en.md) contains PCB projects, parts tables and two connector versions. See the [HAT build record](../hardware/HAT-TIMELINE.en.md) and [IMU build record and video](../hardware/IMU-TIMELINE.en.md).
+Legacy power reference: the repository's battery holder can use M2.6 screws as power contacts. Connect positive to the legacy HUB's VIN (+) and negative to GND (−), following its markings. XH2.54 connectors and soldered leads belong to the legacy instructions; follow the V3 board's connectors and markings for V3.
+
+The [hardware guide](../hardware/README.en.md) contains PCB projects, parts tables and connector-version notes. See the [HAT build record](../hardware/HAT-TIMELINE.en.md) and [IMU build record and video](../hardware/IMU-TIMELINE.en.md).
 
 **The author's assembled IMU comes with FT6 preflashed and needs no initial flashing; calibrate it for your robot after assembly.** Use the [IMU flashing guide](../hardware/IMU-FIRMWARE.en.md) for self-soldered boards, replacement MCUs, maintenance or upgrades. Imaging ZERO or upgrading robot services does not program the external IMU.
 
@@ -66,18 +70,20 @@ Follow the [assembly notes](ASSEMBLY-NOTES.en.md) for 5 GHz Wi-Fi and power conn
 
 **[Open the six-step first-walking route (Chinese) →](https://kissqy.github.io/Microduck-kissqy/build/start.html)** · [Illustrated console guide (Chinese)](https://kissqy.github.io/Microduck-kissqy/console-guide.html)
 
-1. Download [System Image R1](releases/public-image-r1.en.md) and write the compressed image directly to a microSD card using Armbian Imager.
-2. On first boot, join the `Microduck-kissqy` hotspot and configure your home Wi-Fi and a new login password. If the setup does not open automatically, visit `http://10.42.0.1:8088`.
-3. Download Robot Console V167 from [Downloads](../README.en.md#downloads-and-versions), extract the complete archive and run `start.cmd` on Windows or `start.command` on macOS.
-4. Enter your ZERO's SSH address and credentials. **Image R1 includes control.40; install V167's bundled firmware through the console to reach control.43.**
+**Upgrading from V167 to V260 does not require reflashing the system or microSD card.** Download and fully extract Console V260, connect to ZERO, then install its bundled firmware directly through Console V260. Use the R2 image for a fresh installation or when reflashing is needed. Existing V167 users can skip the fresh-installation and first-time network setup steps below and start at step 3.
 
-See the [V167 user guide](../microduck-hd1910/firmware/console/USER-GUIDE.en.md) for installation, logs and controls. The online demos use simulated data; actual control requires the locally running console.
+1. Download [System Image R2](https://github.com/kissqy/Microduck-kissqy/releases/tag/console-studio-v260) and write the compressed image directly to a microSD card using Armbian Imager.
+2. At boot, wait for the Wi-Fi adapter and network service, then let ZERO try its saved networks. If no saved network connects, join the `Microduck-kissqy` hotspot and configure home Wi-Fi and a new login password. If setup does not open automatically, visit `http://10.42.0.1:8088`. A later disconnection does not automatically enable the hotspot; use the console to enable it manually.
+3. Download Robot Console V260 from [Downloads](../README.en.md#downloads-and-versions), extract the complete archive and run `start.cmd` on Windows or `start.command` on macOS.
+4. Enter your ZERO's SSH address and credentials. **Image R2 includes V260 / control.102 and pairs with Robot Console V260. V167 users can install the bundled firmware through V260 without reflashing. Do not import it through V167.**
+
+See the [V260 release guide](https://github.com/kissqy/Microduck-kissqy/blob/main/versions/v260/README.md) and bundled instructions for installation, logs and controls. The [historical V167 user guide](../microduck-hd1910/firmware/console/USER-GUIDE.en.md) remains available. The online demos use simulated data; actual control requires the locally running console.
 
 ### Calibrate your own robot before movement
 
 Check **zero position, direction and limits for all 15 joints, plus IMU mounting orientation**. A reference robot's calibration cannot replace calibration of your own assembly.
 
-Inspect joint and pose feedback before HOME, hold and walking. Use the [V167 control guide](../microduck-hd1910/firmware/console/USER-GUIDE.en.md) for gamepad modes, roller movements and their conditions. The [FAQ](MICRODUCK-FAQ.en.md) helps distinguish connection, service, communication and movement problems.
+Inspect joint and pose feedback before HOME, hold and walking. Follow V260's bundled instructions and runtime prompts for gamepad modes, roller movements and their conditions. The [V167 control guide](../microduck-hd1910/firmware/console/USER-GUIDE.en.md) remains a historical reference for that version. The [FAQ](MICRODUCK-FAQ.en.md) helps distinguish connection, service, communication and movement problems.
 
 ## Advanced: train your own movements
 
@@ -92,4 +98,5 @@ The [repository homepage](../README.en.md) retains seven separate real-robot cli
 Report issues with hardware configuration, console version, running firmware identifier, reproduction steps and logs or video in [GitHub Issues](https://github.com/kissqy/Microduck-kissqy/issues). If these resources help your build, Star the repository to keep its update entry point handy.
 
 Author: kissqy · [Original repository](https://github.com/kissqy/Microduck-kissqy) · [FAQ](MICRODUCK-FAQ.en.md) · [Documentation index](README.en.md)
+
 

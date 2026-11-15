@@ -9,7 +9,7 @@
 
 Microduck-kissqy 是 kissqy 基于 Pollen Robotics Microduck 0.15.1、已完成实机复刻的个人项目，面向 **Radxa ZERO 3W + 15 个飞特 HD1910 舵机 + 本仓库 HAT / IMU**。这里提供系统镜像、中文机器人中控、配套现成动作模型、自制电路板工程，以及全套打印件和摆盘。**日常使用直接用发布包里的模型，无须自己训练。**
 
-**当前稳定公开版本：机器人中控 R17 V167 / 固件 control.43。** 新手路线按预算、采购、装配和首次行走展开。版本及验证依据见[发布基线](../microduck-hd1910/docs/BASELINE.md)。源码可获取；作者原创部分采用个人非商业许可，官方和第三方部分保留各自许可，见[分项许可](../microduck-hd1910/LICENSE)。
+**当前发布：系统镜像 R2 / 机器人中控 V260 / 固件 control.102 / 配网 R10。** [新版下载与独立源码说明](https://github.com/kissqy/Microduck-kissqy/blob/main/versions/v260/README.md)；[R1 历史镜像](releases/public-image-r1.md)及 V167 / control.43 已验证基线保留。新版发布不替代原有实机 Known-Good 记录。新手路线按预算、采购、装配和首次行走展开。版本及验证依据见[发布基线](../microduck-hd1910/docs/BASELINE.md)。源码可获取；作者原创部分采用个人非商业许可，官方和第三方部分保留各自许可，见[分项许可](../microduck-hd1910/LICENSE)。
 
 ## 按这四个问题开始
 
@@ -24,9 +24,9 @@ Microduck-kissqy 是 kissqy 基于 Pollen Robotics Microduck 0.15.1、已完成�
 
 ## 1. 我要花多少钱？
 
-**成品板路线已列价参考合计为 ¥2936.62**：本体参考采购 ¥2649.62（含忆捷 32GB TF 卡 ¥39.90、山泽双头高速读卡器 ¥22.90）＋HAT ¥119＋IMU ¥99＋HUB ¥69。自焊并预留基础工具的已列价参考区间为 ¥3612.84～3852.84。
+**成品板路线已列价参考合计为 ¥2996.62**：本体参考采购 ¥2709.62（含忆捷 32GB TF 卡 ¥39.90、山泽双头高速读卡器 ¥22.90）＋HAT ¥119＋IMU ¥99＋HUB ¥69。自焊并预留基础工具的已列价参考区间为 ¥3672.84～3912.84。
 
-TF 卡 32GB 即可；[山泽双头高速读卡器（SD／TF 卡同读）](https://3.cn/393kj-8k?jkl=@I2cIJ7xKJzv@)按 1 个、作者参考价 ¥22.90 计入，已有可复用。缝合怪版整套代打标价 ¥199；成品板＋代打参考合计 **¥3135.62**，无需购买打印机。HUB ¥69 已计入，电池接入配件与运费另计；历史采购数量含备料。[打开预算页，先看总额并补充自己的费用 →](https://kissqy.github.io/Microduck-kissqy/build/budget.html)
+TF 卡 32GB 即可；[山泽双头高速读卡器（SD／TF 卡同读）](https://3.cn/393kj-8k?jkl=@I2cIJ7xKJzv@)按 1 个、作者参考价 ¥22.90 计入，已有可复用。打印费用按实际报价或耗材预算另计，选择代打无需购买打印机。HUB ¥69 已计入，电池接入配件与运费另计；历史采购数量含备料。[打开预算页，先看总额并补充自己的费用 →](https://kissqy.github.io/Microduck-kissqy/build/budget.html)
 
 ## 2. 我要买什么？
 
@@ -42,7 +42,9 @@ TF 卡 32GB 即可；[山泽双头高速读卡器（SD／TF 卡同读）](https:
 
 **躯干与双腿：** [查看 HUB 分线、IMU 固定、双腿合装与头颈连接实拍](BODY-ASSEMBLY.md)，也可[在网页对应章节查看](https://kissqy.github.io/Microduck-kissqy/build/assembly.html#body-photos)。
 
-下载[全套打印件 · 缝合怪版](../hardware/3d-print-frankenduck/README.md)：36 个 STL、1 个 3MF 项目、5 盘参考摆盘。根据实际打印机与耗材调整配置，TPU 部件使用对应材料配置。整套代打标价 **¥199**；打印方向、电池仓、IMU 安装、滑轮换装、散热和装配细节的优化见上述版本说明。
+下载[全套打印件 · 缝合怪版](../hardware/3d-print-frankenduck/README.md)：36 个 STL、1 个 3MF 项目、5 盘参考摆盘。根据实际打印机与耗材调整配置，TPU 部件使用对应材料配置。打印方向、电池仓、IMU 安装、滑轮换装、散热和装配细节的优化见上述版本说明。
+
+**[MakerWorld 模型与打印配置](https://makerworld.com.cn/zh/models/3258815-microduck-kissqykai-yuan-feng-he-guai-ban#profileId-3849553)**
 
 电池仓有 HUB 组合版和官方式加厚卡扣版；IMU 安装位适配本仓库 IMU。2026-10-21 版增加腿部支撑斜面、去除腿外壳外侧沉孔，并整合无需拆舵机即可换装的脚掌与滑轮结构。滑轮使用 623ZZ 轴承。
 
@@ -52,9 +54,11 @@ TF 卡 32GB 即可；[山泽双头高速读卡器（SD／TF 卡同读）](https:
 
 **HAT、IMU、HUB 为三块独立板卡，均在[同一商品页](https://item.taobao.com/item.htm?id=1095121548583)选择对应款式。HUB ¥69 已含总电源缓冲电容，用于缓冲舵机瞬时负载，防止瞬时压降导致 ZERO 重启。**
 
-电池取电可使用香蕉板（暂未上架），也可以使用仓库配套电池仓，加 M2.6 螺丝作为取电触点；取出的正极接 HUB 电源输入 VIN（+），负极接 GND（−），按实板丝印核对极性。
+**HUB V3 全部接口统一为 AMP2.0，使用配套成品线束插接。配套香蕉取电板也采用 AMP2.0，暂未上架，预计 2026-11-16 前后上架；配齐成品板、线束与香蕉板后，可全插接免焊装配。**
 
-[HAT / IMU / HUB 板卡页](../hardware/README.md)提供工程、采购表和两种接口版本。制作过程分别见[HAT 制作记录](../hardware/HAT-TIMELINE.md)和[IMU 制作记录及视频](../hardware/IMU-TIMELINE.md)。
+旧版取电参考：仓库配套电池仓可加 M2.6 螺丝作为取电触点，正极接旧版 HUB 的 VIN（+），负极接 GND（−），按实板丝印核对极性。旧版 XH2.54 接头与焊线步骤按对应旧版说明使用；V3 按实板接口与丝印核对。
+
+[HAT / IMU / HUB 板卡页](../hardware/README.md)提供工程、采购表与各接口版本说明。制作过程分别见[HAT 制作记录](../hardware/HAT-TIMELINE.md)和[IMU 制作记录及视频](../hardware/IMU-TIMELINE.md)。
 
 **作者提供的成品 IMU 已烧录 FT6 固件，到手无需另行烧录；装配后仍需完成本机标定。** 只有自己焊制新板、换芯片或维护升级时，才按[IMU 烧录指南](../hardware/IMU-FIRMWARE.md)操作。给 ZERO 刷系统镜像或升级机器人服务不会烧录外置 IMU。
 
@@ -64,18 +68,20 @@ TF 卡 32GB 即可；[山泽双头高速读卡器（SD／TF 卡同读）](https:
 
 **[打开首次行走六步路线 →](https://kissqy.github.io/Microduck-kissqy/build/start.html)** · [中控图文教程](https://kissqy.github.io/Microduck-kissqy/console-guide.html)
 
-1. 在[系统镜像 R1 页面](releases/public-image-r1.md)下载镜像，用 Armbian Imager 将压缩镜像直接刷入 TF 卡。
-2. ZERO 首次启动后，连接 `Microduck-kissqy` 热点，按提示配置家庭 Wi-Fi 和新的登录密码；未自动弹出页面时访问 `http://10.42.0.1:8088`。
-3. 从[下载区](../README.md#下载与版本)取得机器人中控 V167，完整解压后运行 `start.cmd`；macOS 使用 `start.command`。
-4. 填入本机 ZERO 的 SSH 地址和登录信息。**R1 镜像预装 control.40；通过 V167 中控安装随包固件，更新到 control.43。**
+**从 V167 升级到 V260 不需要重刷系统或 TF 卡。** 下载并完整解压 V260 中控，连接 ZERO 后，直接在 V260 中控内安装随包固件即可。R2 镜像用于新装系统或需要重刷时。 已有 V167 系统的用户可跳过下面的新装刷卡与首次配网步骤，直接从第 3 步开始。
 
-软件包安装、日志与按键说明见[V167 使用指南](../microduck-hd1910/firmware/console/README.zh-CN.md)。网页在线演示使用模拟数据，实际连接需要本地运行中控。
+1. 在[系统镜像 R2 发布页](https://github.com/kissqy/Microduck-kissqy/releases/tag/console-studio-v260)下载镜像，用 Armbian Imager 将压缩镜像直接刷入 TF 卡。
+2. ZERO 启动时先等待网卡与网络服务就绪并尝试已保存的 Wi-Fi；没有可连接网络或连接失败时，连接其 `Microduck-kissqy` 热点，按提示配置家庭 Wi-Fi 和新的登录密码；未自动弹出页面时访问 `http://10.42.0.1:8088`。运行中断网不会自动切换热点，可在中控手动开启。
+3. 从[下载区](../README.md#下载与版本)取得机器人中控 V260，完整解压后运行 `start.cmd`；macOS 使用 `start.command`。
+4. 填入本机 ZERO 的 SSH 地址和登录信息。**R2 镜像预装 V260 / control.102，配套使用 V260 中控。V167 用户无需重刷，通过 V260 中控安装本版随包固件即可；不要交给 V167 中控导入。**
+
+软件包安装和版本说明见[V260 独立发布说明](https://github.com/kissqy/Microduck-kissqy/blob/main/versions/v260/README.md)，操作以 V260 随包使用说明为准；[V167 历史使用指南](../microduck-hd1910/firmware/console/README.zh-CN.md)仍保留。网页在线演示使用模拟数据，实际连接需要本地运行中控。
 
 ### 标定自己的机器人，再进行运动
 
 逐一核对 **15 个关节的零位、方向、限位，以及 IMU 安装姿态**。参考样机的标定不能直接替代你的机械装配标定。
 
-先检查中控的关节与姿态反馈，再按使用指南完成 HOME、保持和行走。实体手柄的模式切换、轮滑动作及条件，以[V167 按键说明](../microduck-hd1910/firmware/console/README.zh-CN.md)为准。遇到异常先确认发生在哪一环，见[标定与运行问题](MICRODUCK-FAQ.md)。
+先检查中控的关节与姿态反馈，再按使用指南完成 HOME、保持和行走。实体手柄的模式切换、轮滑动作及条件，以 V260 随包使用说明与本机提示为准；[V167 历史按键说明](../microduck-hd1910/firmware/console/README.zh-CN.md)仅供旧版对照。遇到异常先确认发生在哪一环，见[标定与运行问题](MICRODUCK-FAQ.md)。
 
 ## 进阶玩法：训练自己的动作
 
@@ -90,4 +96,5 @@ TF 卡 32GB 即可；[山泽双头高速读卡器（SD／TF 卡同读）](https:
 遇到问题可在 [GitHub Issues](https://github.com/kissqy/Microduck-kissqy/issues) 提供：硬件配置、中控版本、实际固件标识、发生步骤、日志或视频。若这些资料帮助你完成搭建，欢迎 Star 收藏仓库，后续按同一入口查看更新。
 
 作者：kissqy · [项目原始仓库](https://github.com/kissqy/Microduck-kissqy) · [常见问题](MICRODUCK-FAQ.md) · [完整文档目录](README.md)
+
 

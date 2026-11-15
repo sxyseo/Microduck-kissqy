@@ -20,8 +20,8 @@
 - `firmware/`：固件源码、安装脚本、模型、测试和许可证。
 - `firmware/console/`：V167 中控源码及随包固件载荷。
 - `training-console/`：R1.5.27 训练中控，保持原发布内容。
-- `release-assets/`：V167 中控和 R1.5.27 训练中控完整 ZIP。
-- `release-assets/build-baselines/`：一份 V164 ZIP，仅用于复现构建基线。
+- `versions/v167/release-assets/`：V167 中控和 R1.5.27 训练中控完整 ZIP。
+- `versions/v167/release-assets/build-baselines/`：一份 V164 ZIP，仅用于复现构建基线。
 - 系统镜像：已有 `public-image-r1` Release；刷卡后通过 V167 中控安装随包固件，升级到 control.43。
 
 源码目录不再内嵌旧版完整 ZIP，也不保存已编译程序、ONNX 动态库及打包模型的第二份二进制。构建所需资源由 `firmware/prepare-V167.py` 校验并恢复，生成文件已加入 Git 忽略规则。说明见 [V167 构建指南](../firmware/BUILDING-V167.md)。
@@ -36,4 +36,6 @@
 
 当前软件发布参考为 **0.15.1 + R17 V167 / control.43 + Training R1.5.27**；系统镜像仍使用已重刷验证的 **Public Image R1**，不同动作的验收范围按各自实测记录执行。
 
-**下一步唯一主任务：按公开下载复现 V167 安装与本机标定。** 一次只验证一个变量。
+2026-11-12 已完成公开中控与固件的源码清理修订 1：移除旧工具与未引用模块，按哈希恢复重复模型资料。已通过资源恢复、198 项指定 Python 检查和中控启动检查；没有 Rust/ARM64 重编译或实机验收，不建立新的运行 Known-Good。详见[源码清理审计](SOURCE-CLEANUP-20261112.md)。
+
+**下一步唯一主任务：在既有 Linux/WSL 环境完成清理后源码的 Rust 与 ARM64 构建验收。** 一次只验证一个变量。

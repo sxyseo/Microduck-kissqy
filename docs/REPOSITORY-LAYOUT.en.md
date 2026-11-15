@@ -1,24 +1,43 @@
 [简体中文](REPOSITORY-LAYOUT.md) | **English**
 
-# Repository layout and repeated resources
+# Repository layout and versions
 
-## Firmware source is public
+## Choose a version directory
 
-Current release: **R17 V167 / control.43**. Rust firmware and Feetech adaptation source are in [firmware/](../microduck-hd1910/firmware/); console source is in its `console/` directory. See [BUILD.en.md](../microduck-hd1910/docs/BUILD.en.md).
+Robot Console, firmware source and matching downloads are grouped under [versions/](../versions/) on main, separated into **V167** and **V260**. No branch switching is needed.
+
+| Directory | Version and contents |
+| --- | --- |
+| [versions/v260/](../versions/v260/) | Current release: Studio V260 / control.102 / Image R2 / Wi-Fi R10. Console source is in `console/`; firmware source is in `firmware/`. |
+| [versions/v167/](../versions/v167/README.en.md) | Historical R17 V167 / control.43. Preserves the relative layout of `microduck-hd1910/` source and `release-assets/` build resources. Image R1 originally includes control.40. |
+| `microduck-hd1910/` | Preserved source compatibility path. The root `release-assets/` directory is retired; packages and build baselines now use `versions/v167/release-assets/`. |
+| `microduck-hd1910/training-console/` | Independent Training Studio R1.5.27; its version number is separate from Robot Console versions. |
+| `hardware/` | Shared board projects, 3D printing files and hardware documentation. |
+| `docs/` | Shared guides and GitHub Pages demos using simulated data. |
+
+V167 console source is in [microduck-hd1910/firmware/console/](../versions/v167/microduck-hd1910/firmware/console/), and firmware source in [microduck-hd1910/firmware/](../versions/v167/microduck-hd1910/firmware/). See [BUILD.en.md](../versions/v167/microduck-hd1910/docs/BUILD.en.md). Preserving their relative depth lets packaging scripts locate the pinned build baseline at the original relative path.
+
+This updates navigation and the resource paths used by legacy root packaging tools. Frozen version source and runtime packages retain their original bytes; it does not add real-robot Known-Good results. The next single main task remains V260 acceptance on the reference card.
 
 ## Larger files
 
 | Content | Location and purpose |
 | --- | --- |
-| Ready-to-use downloads | Console ZIPs in `release-assets/` and standalone firmware in `firmware/console/updates/`. |
-| Training configuration and references | `microduck-hd1910/training-console/data/`, used by the local training console. |
+| Ready-to-use downloads | The two V260 runtime ZIPs and R2 image are on the [release page](https://github.com/kissqy/Microduck-kissqy/releases/tag/console-studio-v260); V167 downloads are grouped in [its version directory](../versions/v167/README.en.md). The former root download paths are retired; use the version-directory URLs. |
+| Training configuration and references | `microduck-hd1910/training-console/data/`, for the independent training console; the V167 snapshot retains its original training material. |
 | Online-demo resources | `docs/`, the GitHub Pages publication directory; copied geometry and training parameters keep the demo independent. |
-| Build baseline | One pinned V164 ZIP in `release-assets/build-baselines/`, used to reproduce the V167 installer. |
-| Historical reference evidence | `firmware/verification/official-reference/`, containing pinned upstream sources, models and original capture records. |
+| Build baseline | One pinned V164 ZIP in `versions/v167/release-assets/build-baselines/`, used to reproduce V167. The root copy is removed; updated links and the legacy source packaging tools use this archive. |
+| Historical reference evidence | `versions/v167/microduck-hd1910/firmware/verification/official-reference/`, containing pinned upstream sources, models and original capture records. |
 
-Git uses the same file object for identical bytes at different paths, while a complete directory ZIP includes each path separately.
+The duplicate root `release-assets/` directory is removed. Archived ZIPs, checksum files and the fixed build baseline reuse existing file objects; only download and resource-location paths are adjusted. Frozen version source and release packages are unchanged.
 
-## Cleanup
+## November 12, 2026 source cleanup
+
+Removed 41 retired one-shot tools and one unlinked experiment module from the public V167/control.43 source. Another 59 identical model metadata copies are now restored from `policies/` by checksum-verified `prepare-V167.py`. In total, 101 tracked files / about 3.99 MiB were removed from the source tree; published runtime archives and Git history are unchanged.
+
+See the [source cleanup audit (中文)](../versions/v167/microduck-hd1910/docs/SOURCE-CLEANUP-20261112.md) for the exact manifest, verification limits and pre-existing test incompatibilities.
+
+## Earlier cleanup
 
 - Consolidated identical official-reference snapshots, preserving original bytes and source records. The old duplicate directory is deleted; a SHA256 mapping remains in `REFERENCE-LAYOUT.json`.
 - Removed the duplicate left-kick model alias and redirected the documentation index to the active directory.

@@ -20,8 +20,8 @@ Published version: **R17 V167 / control.43 + Training R1.5.27**, based on offici
 - `firmware/`: firmware source, installer scripts, models, tests and licenses.
 - `firmware/console/`: V167 console source and bundled firmware payload.
 - `training-console/`: unchanged R1.5.27 release content.
-- `release-assets/`: complete V167 console and R1.5.27 training ZIPs.
-- `release-assets/build-baselines/`: one V164 ZIP retained for reproducible packaging.
+- `versions/v167/release-assets/`: complete V167 console and R1.5.27 training ZIPs.
+- `versions/v167/release-assets/build-baselines/`: one V164 ZIP retained for reproducible packaging.
 - System image: the existing `public-image-r1` Release; after flashing, install V167 bundled firmware to upgrade to control.43.
 
 Source no longer embeds an old complete installer ZIP or a second binary copy of compiled programs, ONNX libraries and packaged models. `firmware/prepare-V167.py` verifies and restores required resources; Git ignores generated copies. See [the V167 build guide](../firmware/BUILDING-V167.en.md).
@@ -36,4 +36,6 @@ The image was previously verified by reflashing, first Wi-Fi setup, SSH, robot c
 
 Current release reference: **0.15.1 + R17 V167 / control.43 + Training R1.5.27**, with the reflash-verified **Public Image R1**. Action-specific acceptance remains governed by the corresponding real-robot records.
 
-**Single next task: reproduce V167 installation and local calibration from the published downloads.** Validate one variable at a time.
+November 12: source cleanup revision 1 removed obsolete tools and an unlinked module, with duplicate model metadata restored by checksum. Resource restoration, 198 selected Python checks and console startup passed. No Rust/ARM64 rebuild or hardware acceptance was performed, and no new runtime Known-Good was established. See the [source cleanup audit (中文)](SOURCE-CLEANUP-20261112.md).
+
+**Single next task: validate Rust and ARM64 builds of the cleaned source in the existing Linux/WSL environment.** Validate one variable at a time.

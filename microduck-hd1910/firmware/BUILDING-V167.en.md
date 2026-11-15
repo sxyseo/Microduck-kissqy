@@ -22,8 +22,6 @@ The V164 ZIP is kept once as a reproducible build baseline at `../../versions/v1
 
 After the November 12 source cleanup, duplicated model metadata is also restored from the specified canonical `policies/` files with SHA256 checks. Preparation restores 91 resources in total; see `SOURCE-LAYOUT.json` and the [source cleanup audit (中文)](../docs/SOURCE-CLEANUP-20261112.md).
 
-After the November 12 source cleanup, duplicated model metadata is also restored from the specified canonical `policies/` files with SHA256 checks. Preparation restores 91 resources in total; see `SOURCE-LAYOUT.json` and the [source cleanup audit (中文)](../docs/SOURCE-CLEANUP-20261112.md).
-
 ## Build
 
 Requirements: Linux/WSL, Rust 1.99, the AArch64 GNU target, cargo-zigbuild 0.23.4, Zig 0.15.1, Python 3, pkg-config and libudev development files. See [BUILD.en.md](../docs/BUILD.en.md) for ordinary source compilation. Full release reproduction additionally needs host ONNX Runtime 1.28.0, QEMU and an ARM64 userland.
